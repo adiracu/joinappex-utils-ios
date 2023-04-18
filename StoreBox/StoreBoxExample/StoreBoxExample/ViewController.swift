@@ -22,9 +22,9 @@ class ViewController: UIViewController {
         print("Onbarding: \(box.getBool(forKey: .onboardingPassed))")
 
         let stringBox = Box<String>.load(boxKey: "MySettings", type: .secure)
-        print("TestKey: \(stringBox.getString(forKey: "TestKey"))")
+        print("TestKey: \(stringBox.get(String.self, forKey: "TestKey") ?? "No value")")
         stringBox.set(object: "TestValue", forKey: "TestKey")
-        print("TestKey: \(stringBox.getString(forKey: "TestKey"))")
+        print("TestKey: \(stringBox.getString(forKey: "TestKey") ?? "No value")")
     }
 }
 
