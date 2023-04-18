@@ -28,7 +28,7 @@ extension InsecureStoreService {
         public var errorDescription: String? {
             switch self {
             case .loadValueError:
-                return NSLocalizedString("Loading value Error.", comment: "There isn't value for this key")
+                return "Loading value Error. There isn't value for this key"
             }
         }
     }

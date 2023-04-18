@@ -12,19 +12,27 @@ class ViewController: UIViewController {
         super.viewDidLoad()
 
         let box = Box<AppSettings>.load(type: .secure)
-        print("Login: \(box.getBool(forKey: .userIsLogin))")
-        print("Onbarding: \(box.getBool(forKey: .onboardingPassed))")
+        print("Login: \(box.bool(forKey: .userIsLogin))")
+        print("Onbarding: \(box.bool(forKey: .onboardingPassed))")
         
-        box.set(object: true, forKey: .onboardingPassed)
-        box.set(object: true, forKey: .userIsLogin)
+        box.set(true, forKey: .onboardingPassed)
+        box.set(true, forKey: .userIsLogin)
 
-        print("Login: \(box.getBool(forKey: .userIsLogin))")
-        print("Onbarding: \(box.getBool(forKey: .onboardingPassed))")
+        print("Login: \(box.bool(forKey: .userIsLogin))")
+        print("Onbarding: \(box.bool(forKey: .onboardingPassed))")
 
         let stringBox = Box<String>.load(boxKey: "MySettings", type: .secure)
         print("TestKey: \(stringBox.get(String.self, forKey: "TestKey") ?? "No value")")
-        stringBox.set(object: "TestValue", forKey: "TestKey")
-        print("TestKey: \(stringBox.getString(forKey: "TestKey") ?? "No value")")
+
+        stringBox.set("TestValue", forKey: "TestKey")
+        print("TestKey: \(stringBox.get(String.self, forKey: "TestKey") ?? "No value")")
+
+        stringBox.setEncodable(TestCodable(), forKey: "TestKeyCodable")
+        print("TestKey: \(stringBox.getDecodable(type: TestCodable.self, forKey: "TestKeyCodable")!)")
     }
 }
 
+
+struct TestCodable: Codable {
+    var value: Int = 0
+}
