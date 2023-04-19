@@ -66,7 +66,7 @@ public extension Storage {
     ///   - type: The Type of the value to decode
     ///   - key: The key which will used to get object
     /// - Returns: Decoded object if it present and decoded sucessfully
-    func getDecodable<T>( type: T.Type, forKey key: Key) -> T? where T: Decodable {
+    func getDecodable<T>(_ type: T.Type, forKey key: Key) -> T? where T: Decodable {
         guard let data = get(forKey: key) as? Data else {
             return nil
         }
