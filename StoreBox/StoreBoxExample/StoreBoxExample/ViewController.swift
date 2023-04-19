@@ -28,7 +28,7 @@ class ViewController: UIViewController {
         print("TestKey: \(stringBox.get(String.self, forKey: "TestKey") ?? "No value")")
 
         stringBox.setEncodable(TestCodable(), forKey: "TestKeyCodable")
-        print("TestKey: \(stringBox.getDecodable(type: TestCodable.self, forKey: "TestKeyCodable")!)")
+        print("TestKey: \(stringBox.getDecodable(TestCodable.self, forKey: "TestKeyCodable")!)")
     }
 }
 
