@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 private typealias CacheType = [String: Any]
 
@@ -20,7 +21,7 @@ private typealias CacheType = [String: Any]
 ///     
 public class Box<Key>: Storage where Key: BoxKey {
     private let storageQueue: DispatchQueue
-    private let storeQueue: DispatchQueue
+    private var timer: Timer?
 
     private var storeService: StoreService
     private var cache: CacheType
@@ -39,9 +40,24 @@ public class Box<Key>: Storage where Key: BoxKey {
 
         cache = .init()
         storageQueue = DispatchQueue(label: "StoreBox.\(self.key).storageQueue", qos: .userInitiated)
-        storeQueue = DispatchQueue(label: "StoreBox.\(self.key).storeQueue", qos: .userInitiated)
 
         loadStorage()
+
+        NotificationCenter.default.addObserver(forName: UIApplication.willTerminateNotification,
+                                               object: nil,
+                                               queue: .main) { [weak self] _ in
+            self?.storageQueue.sync {
+                self?.save()
+            }
+        }
+
+        NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification,
+                                               object: nil,
+                                               queue: .main) { [weak self] _ in
+            self?.storageQueue.sync {
+                self?.save()
+            }
+        }
     }
 
     private func loadStorage() {
@@ -59,15 +75,20 @@ public class Box<Key>: Storage where Key: BoxKey {
     }
 
     private func save() {
-        let cacheCopy = cache
-        
-        storageQueue.async { [self] in
-            do {
-                let data = try NSKeyedArchiver.archivedData(withRootObject: cacheCopy,
-                                                                requiringSecureCoding: false)
-                try storeService.save(value: data, forKey: key)
-            } catch {
-                assertionFailure("Box \(key) saving failed with an error: \(error).")
+        do {
+            let data = try NSKeyedArchiver.archivedData(withRootObject: cache,
+                                                            requiringSecureCoding: false)
+            try storeService.save(value: data, forKey: key)
+        } catch {
+            assertionFailure("Box \(key) saving failed with an error: \(error).")
+        }
+    }
+
+    private func scheduleSave() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in
+            self.storageQueue.async { [self] in
+                self.save()
             }
         }
     }
@@ -78,9 +99,9 @@ public class Box<Key>: Storage where Key: BoxKey {
     ///   - value: Any value to store
     ///   - key: Key which will used to store value in the box
     public func set(_ value: Any, forKey key: Key) {
-        storeQueue.sync { [self] in
+        storageQueue.sync { [self] in
             cache[key.rawValue] = value
-            save()
+            scheduleSave()
         }
     }
 
@@ -98,15 +119,15 @@ public class Box<Key>: Storage where Key: BoxKey {
     /// - Parameters:
     ///   - key: Key which will used to remove value
     public func remove(forKey key: Key) {
-        storeQueue.sync {
+        storageQueue.sync {
             cache.removeValue(forKey: key.rawValue)
-            save()
+            scheduleSave()
         }
     }
 
     /// Remove `all` values in the box
     public func clearStorage() {
-        storeQueue.sync {
+        storageQueue.sync {
             do {
                 try storeService.remove(forKey: key)
                 cache.removeAll()
