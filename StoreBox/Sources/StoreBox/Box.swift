@@ -59,9 +59,11 @@ public class Box<Key>: Storage where Key: BoxKey {
     }
 
     private func save() {
+        let cacheCopy = cache
+        
         storageQueue.async { [self] in
             do {
-                let data = try NSKeyedArchiver.archivedData(withRootObject: cache,
+                let data = try NSKeyedArchiver.archivedData(withRootObject: cacheCopy,
                                                                 requiringSecureCoding: false)
                 try storeService.save(value: data, forKey: key)
             } catch {
