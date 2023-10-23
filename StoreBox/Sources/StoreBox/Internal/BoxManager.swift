@@ -28,9 +28,9 @@ class BoxManager {
             return box
 
         case .insecure:
-            guard let box = secureBoxes[key] as? Box<Keys> else {
+            guard let box = insecureBoxes[key] as? Box<Keys> else {
                 let box = Box<Keys>(key: key, type: type, storeService: InsecureStoreService())
-                secureBoxes[key] = box
+                insecureBoxes[key] = box
                 return box
             }
             return box
